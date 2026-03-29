@@ -115,81 +115,164 @@ If `gymtorch` imports without errors, the setup is complete.
 
 ## 4. Training on Cluster with Slurm
 
-Example job scripts for each task are provided in `Disassembly_job_files/`. Each task has scripts for three modalities (Vision, Vision+TacRGB, Vision+TacFF) across multiple seeds.
-
 ### 4.1 Task Configuration Reference
 
-| Task | Config Name | IsaacGym Config | Dataset Path |
-|------|-------------|-----------------|--------------|
-| S1 (Loose) | `vistac_pih_multiple_vision_onecam_disassembly` | `isaacgym_config_looseplug.yaml` | `data/loose_plug` |
-| S2 (Tight) | `vistac_pih_multiple_vision_onecam_disassembly` | `isaacgym_config_tightplug.yaml` | `data/tight_plug` |
-| S3 (Lidded) | `vistac_pih_multiple_vision_onecam_disassembly` | `isaacgym_config_liddedloose.yaml` | `data/lidded_loose` |
-| S4 (Barbed Flat) | `vistac_pih_multiple_vision_onecam_disassembly` | `isaacgym_config_barbed_flat.yaml` | `data/barbed_flat` |
-| S5 (Barbed Spike) | `vistac_pih_multiple_vision_onecam_disassembly` | `isaacgym_config_barbed_spike.yaml` | `data/barbed_spike` |
+| Task | IsaacGym Config | Dataset Path |
+|------|-----------------|--------------|
+| S1 (Loose) | `isaacgym_config_looseplug.yaml` | `data/loose_plug` |
+| S2 (Tight) | `isaacgym_config_tightplug.yaml` | `data/tight_plug` |
+| S3 (Lidded) | `isaacgym_config_liddedloose.yaml` | `data/lidded_loose` |
+| S4 (Barbed Flat) | `isaacgym_config_barbed_flat.yaml` | `data/barbed_flat` |
+| S5 (Barbed Spike) | `isaacgym_config_barbed_spike.yaml` | `data/barbed_spike` |
 
-### 4.2 Running a Training Job
+### 4.2 Creating the Slurm Submission Script
 
-**Vision Only** (example: Task S4, Barbed Flat, seed 42):
+Create a file named `job_submit.sh`:
 
 ```bash
-cd Disassembly_job_files/barbed_flat
-chmod +x vision_loose_plug_42.sh
-./vision_loose_plug_42.sh
+touch job_submit.sh
 ```
 
-**Vision + TacFF** (example: Task S4, Barbed Flat, seed 42):
+Paste the following script into it:
+
+> **Important:**
+> Before using the job script below, update the following fields:
+>
+> - Replace `[user]` with your cluster username
+> - Ensure `CONTAINER_FILE` points to your `contact.sif` file
+>   ```
+>   CONTAINER_FILE=/path/to/cluster/[user]/contact.sif
+>   ```
+> - Confirm the `cd` command points to your `CONTACT` repository path
+>   ```
+>   cd /path/to/cluster/[user]/contact_ws/CONTACT
+>   ```
 
 ```bash
-cd Disassembly_job_files/barbed_flat
-chmod +x vision_ff_loose_plug_42.sh
-./vision_ff_loose_plug_42.sh
-```
+#!/bin/bash
 
-**Vision + TacRGB** (example: Task S4, Barbed Flat, seed 42):
+SEED=42
+NUM_DEMOS=50
+NUM_EPOCH=500
+DATASET_PATH=data/barbed_flat
+ISAACGYM_CONFIG="isaacgym_config_barbed_flat.yaml"
+ENV="barbed_flat"
+LOG_NAME="dp_barbed_flat_vision"
+TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly
+INPUT_TYPE="vision"
+EXP_NAME="${INPUT_TYPE}_${ENV}_${NUM_DEMOS}"
 
-```bash
-cd Disassembly_job_files/barbed_flat
-chmod +x vision_rgb_loose_plug_42.sh
-./vision_rgb_loose_plug_42.sh
-```
+JOB_NAME="${EXP_NAME}_${SEED}"
 
-### 4.3 Custom Training Command
+CONTAINER_FILE=/path/to/cluster/[user]/contact.sif
 
-You can also launch training directly. The key parameters are:
+cat <<EOT > job_script_${JOB_NAME}.sh
+#!/bin/bash
+#SBATCH --job-name=${JOB_NAME}
+#SBATCH --output=logs/%x_%j.out
+#SBATCH --error=logs/%x_%j.err
+#SBATCH --account=shey
+#SBATCH --gres=gpu:1
+#SBATCH --partition=a30
+#SBATCH --mem=120G
+#SBATCH --qos=normal
+#SBATCH --cpus-per-task=8
+#SBATCH --time=4:00:00
 
-```bash
-apptainer exec --nv contact.sif bash -c "
+# Run the commands inside the Apptainer container
+apptainer exec --nv ${CONTAINER_FILE} bash -c "
     source ~/.bashrc
     conda activate contact
-    cd /path/to/CONTACT
+    export LD_LIBRARY_PATH=\${CONDA_PREFIX}/lib:\${LD_LIBRARY_PATH}
+    cd /path/to/cluster/[user]/contact_ws/CONTACT
     python train.py \
         --config-name=train_diffusion_workspace_disassembly.yaml \
-        task=vistac_pih_multiple_vision_onecam_disassembly \
-        exp_name=BFW50 \
-        dataset_path=data/barbed_flat \
-        isaacgym_cfg_name=isaacgym_config_barbed_flat.yaml \
-        training.seed=42 \
-        training.num_epochs=500 \
-        task.dataset.max_train_episodes=50 \
-        hydra.run.dir=data/outputs/BFW50/42 \
-        logging.project=barbedflat_42
+        task=${TASK_NAME} \
+        exp_name=${EXP_NAME} \
+        dataset_path=${DATASET_PATH} \
+        isaacgym_cfg_name=${ISAACGYM_CONFIG} \
+        training.seed=${SEED} \
+        training.num_epochs=${NUM_EPOCH} \
+        task.dataset.max_train_episodes=${NUM_DEMOS} \
+        hydra.run.dir=data/outputs/${EXP_NAME}/${SEED} \
+        logging.project=${LOG_NAME}
 "
+EOT
+
+# Infinite loop to monitor and resubmit the job
+while true; do
+    JOB_ID=$(squeue --name=$JOB_NAME --noheader --format=%A)
+
+    if [ -z "$JOB_ID" ]; then
+        echo "Job $JOB_NAME is not running. Resubmitting..."
+        sbatch job_script_${JOB_NAME}.sh
+        sleep 10
+    else
+        echo "Job $JOB_NAME is still running (Job ID: $JOB_ID)."
+    fi
+
+    sleep 30
+done
 ```
 
-For **TacFF** modality, use `task=vision_tacff_disassembly` instead.
+---
 
-Logs and checkpoints are saved to `data/outputs/`. Success rates and rollout videos are logged to W&B.
+### 4.3 Submitting the Training Job
 
-### 4.4 Key Parameters
+Grant run permission and submit:
 
-| Parameter | Description |
-|-----------|-------------|
-| `task` | Sensing config: `vistac_pih_multiple_vision_onecam_disassembly` (Vision/TacRGB) or `vision_tacff_disassembly` (TacFF) |
-| `isaacgym_cfg_name` | Task geometry config (see table above) |
-| `dataset_path` | Path to demonstration dataset |
-| `training.seed` | Random seed (we use 42, 43, 44) |
-| `training.num_epochs` | Training epochs (default: 500) |
-| `task.dataset.max_train_episodes` | Number of demos to use (default: 50) |
+```bash
+chmod +x job_submit.sh
+./job_submit.sh
+```
+
+Slurm will schedule the job. Logs appear in the `logs/` directory. Success rates and rollout videos are logged to W&B.
+
+---
+
+### 4.4 Running Vision + TacRGB Policy
+
+To train the Vision + TacRGB policy, modify the following fields in your `job_submit.sh`:
+
+```bash
+TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly
+INPUT_TYPE="vistac"
+```
+
+Then submit with `./job_submit.sh`.
+
+---
+
+### 4.5 Running Vision + TacFF Policy
+
+To train the Vision + TacFF policy, modify the following fields in your `job_submit.sh`:
+
+```bash
+TASK_NAME=vision_tacff_disassembly
+INPUT_TYPE="tacff"
+```
+
+Then submit with `./job_submit.sh`.
+
+---
+
+### 4.6 Running Other Tasks
+
+To switch tasks, update `DATASET_PATH`, `ISAACGYM_CONFIG`, `ENV`, and `LOG_NAME` in your `job_submit.sh`. For example, to run Task S1 (Loose Plug):
+
+```bash
+DATASET_PATH=data/loose_plug
+ISAACGYM_CONFIG="isaacgym_config_looseplug.yaml"
+ENV="loose_plug"
+LOG_NAME="dp_loose_plug_vision"
+```
+
+> **Important:**
+> Among the parameters in `job_submit.sh`, the most critical ones to update when switching tasks or sensing modalities are:
+> `DATASET_PATH`, `ISAACGYM_CONFIG`, and `TASK_NAME`.
+> Other fields primarily affect file naming and experiment logging.
+>
+> You can freely adjust `SEED`, `NUM_DEMOS`, and `NUM_EPOCH` to control the random seed, number of demonstrations, and total training epochs.
 
 ---
 
@@ -199,8 +282,11 @@ For local machines (PC/workstation), use `scripts/run_local.sh`:
 
 ```bash
 chmod +x scripts/run_local.sh
+```
 
-# Vision Only - Barbed Flat
+### 5.1 Running Vision-Only Policy
+
+```bash
 DATASET_PATH=data/barbed_flat \
 ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
 TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
@@ -210,7 +296,48 @@ LOG_NAME=bf_vision \
 bash scripts/run_local.sh
 ```
 
-Override any parameter via environment variables: `SEED`, `NUM_DEMOS`, `NUM_EPOCH`, `TASK_NAME`, `DATASET_PATH`, `ISAACGYM_CONFIG`.
+### 5.2 Running Vision + TacRGB Policy
+
+```bash
+DATASET_PATH=data/barbed_flat \
+ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
+TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
+INPUT_TYPE=vistac \
+ENV_TAG=barbed_flat \
+LOG_NAME=bf_vistac \
+bash scripts/run_local.sh
+```
+
+### 5.3 Running Vision + TacFF Policy
+
+```bash
+DATASET_PATH=data/barbed_flat \
+ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
+TASK_NAME=vision_tacff_disassembly \
+INPUT_TYPE=tacff \
+ENV_TAG=barbed_flat \
+LOG_NAME=bf_tacff \
+bash scripts/run_local.sh
+```
+
+### 5.4 Running Other Tasks
+
+Override `DATASET_PATH`, `ISAACGYM_CONFIG`, `ENV_TAG`, and `LOG_NAME` for other tasks (see Section 4.1 for the configuration reference).
+
+You can also adjust training hyperparameters:
+
+```bash
+SEED=44 \
+NUM_DEMOS=50 \
+NUM_EPOCH=500 \
+DATASET_PATH=data/loose_plug \
+ISAACGYM_CONFIG=isaacgym_config_looseplug.yaml \
+TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
+INPUT_TYPE=vision \
+ENV_TAG=loose_plug \
+LOG_NAME=lp_vision \
+bash scripts/run_local.sh
+```
 
 ---
 
