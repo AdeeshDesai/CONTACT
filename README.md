@@ -8,125 +8,100 @@ This codebase is built upon [ManiFeel](https://github.com/purdue-mars/manifeel).
 
 ---
 
-## Simulation Tasks
-
-| Task | Name | Description |
-|------|------|-------------|
-| **S1** | Vertical Pull, Loose Socket | Simple extraction with generous clearance |
-| **S2** | Vertical Pull, Tight Socket | Reduced tolerance requiring friction-aware force control |
-| **S3** | Loose Plug with Lid | Multi-stage task: disengage lid constraint, then extract |
-| **S4** | Vertical Pull, Flat Barb | Asymmetric resistance through flat barb structure |
-| **S5** | Vertical Pull, Spike Barb | Spike-shaped barb requiring careful collision avoidance |
-
-Three sensing configurations are evaluated per task:
-- **Vision Only** — front + wrist RGB cameras
-- **Vision + TacRGB** — cameras + tactile RGB deformation images
-- **Vision + TacFF** — cameras + tactile force-field (shear + normal force grid)
-
----
-
 ## 1. Installation
 
-### 1.1 Create Workspace
+CONTACT provides an automated installation script that handles all setup steps.
 
-Create a workspace directory and clone this repository:
+### Prerequisites
 
-```bash
-mkdir contact_ws && cd contact_ws
-git clone https://github.com/AdeeshDesai/CONTACT.git
-```
-
-### 1.2 Download IsaacGym
-
-Download the TacSL-specific IsaacGym binary from [here](https://drive.google.com/file/d/13dFRF9EXpzIWaJF2Z6f7BsuPUGQkPE8v/view?usp=sharing) and extract it into the workspace:
+- **Download the TacSL specific Isaac Gym binary** from [here](https://drive.google.com/file/d/13dFRF9EXpzIWaJF2Z6f7BsuPUGQkPE8v/view?usp=sharing) and extract it to the parent directory of the CONTACT repository:
 
 ```bash
-# From contact_ws/
 tar -xvzf IsaacGym_Preview_TacSL_Package.tar.gz
 ```
 
-### 1.3 Run Installation Script
+The directory structure should look like:
+```
+parent_directory/
+├── IsaacGym_Preview_TacSL_Package/
+└── CONTACT/
+```
+
+### Automated Installation
+
+Clone the CONTACT repository and run the installation script:
 
 ```bash
+git clone https://github.com/AdeeshDesai/CONTACT.git
 cd CONTACT
 bash install.sh
 ```
 
-The script will:
-- Create a Python 3.8 conda environment named `contact`
+The installation script will:
+- Check for conda/mamba, and install Miniforge3 if not found
+- Create a Python 3.8 environment named `contact`
 - Install IsaacGym TacSL
-- Clone and install [manifeel-isaacgymenvs](https://github.com/purdue-mars/manifeel-isaacgymenvs) (IsaacGymEnvs + TacSL sensors)
-- Clone and install [Diffusion Policy](https://github.com/real-stanford/diffusion_policy)
+- Clone and install manifeel-isaacgymenvs (TacSL fork)
+- Clone and install Diffusion Policy
 - Install CONTACT and all dependencies
-
-After installation, your workspace should look like:
-```
-contact_ws/
-├── CONTACT/                          # This repository
-├── manifeel-isaacgymenvs/            # IsaacGymEnvs + TacSL (cloned by install.sh)
-├── IsaacGym_Preview_TacSL_Package/   # IsaacGym binary (downloaded manually)
-└── diffusion_policy/                 # Diffusion Policy (cloned by install.sh)
-```
-
 ---
 
-## 2. Download Dataset
+## 2. Download CONTACT dataset
 
-Download the CONTACT demonstration datasets from [Google Drive (link coming soon)]() and place them inside `CONTACT/data/`:
-
-```
-CONTACT/
-└── data/
-    ├── loose_plug/
-    ├── tight_plug/
-    ├── lidded_loose/
-    ├── barbed_flat/
-    └── barbed_spike/
-```
-
-Each dataset contains 50 teleoperated demonstrations with front camera, wrist camera, tactile RGB, tactile force-field, and end-effector state observations recorded at 10 Hz.
+Download and unzip the CONTACT dataset for your target task from [here](https://drive.google.com/drive/folders/1FqhPtE4S8JfbGgZU9uFjm-rjhGslpqEy?usp=sharing) and place it inside the `CONTACT/data` directory of the `CONTACT` repository. If the `data` directory does not exist, please create it.
 
 ---
 
 ## 3. Setup Apptainer for Training
 
-We provide an Apptainer container for reproducible environments across clusters and workstations.
+To ensure a consistent and reproducible environment across clusters, workstations, and local PCs, we provide an Apptainer-based setup for CONTACT. System configurations and dependency versions may vary across machines, which can lead to compatibility issues.
 
-### 3.1 Build the Container
+Apptainer allows CONTACT to run inside a controlled Ubuntu-based container with all required dependencies pre-defined, simplifying setup and improving portability.
+
+Please follow the steps below to configure the containerized training environment.
+
+---
+
+The repository includes Apptainer definition file `contact.def`. From the root directory of the repository, build the Apptainer image (`contact.sif`):
 
 ```bash
 apptainer build contact.sif contact.def
 ```
 
-### 3.2 Verify the Setup
+You can then try running the container with:
 
 ```bash
 apptainer exec --nv contact.sif bash
+```
+
+This will drop you into a bash shell inside the CONTACT compatible Ubuntu-based Apptainer environment.
+
+Then, run the following commands inside the Apptainer environment to verify that everything is working correctly:
+
+```bash
 source ~/.bashrc
 conda activate contact
 export LD_LIBRARY_PATH=${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
 python -c "from isaacgym import gymtorch"
+```
+If the `gymtorch` library builds and imports correctly (that is, no errors appear), you can exit the Apptainer environment:
+
+```bash
 exit
 ```
 
-If `gymtorch` imports without errors, the setup is complete.
+---
+
+## 4. CONTACT Run on Cluster with Slurm
+
+Once the CONTACT environment and Apptainer container have been correctly set up, you can run training for any CONTACT task.
+As an example, this section shows how to train a **vision-only Diffusion Policy** for the **Barbed Flat (S4)** disassembly task. Make sure that the CONTACT demo dataset for Barbed Flat has already been downloaded and placed in `CONTACT/data/barbed_flat`:
 
 ---
 
-## 4. Training on Cluster with Slurm
+### 4.1 Creating the Slurm Submission Script
 
-### 4.1 Task Configuration Reference
-
-| Task | IsaacGym Config | Dataset Path |
-|------|-----------------|--------------|
-| S1 (Loose) | `isaacgym_config_looseplug.yaml` | `data/loose_plug` |
-| S2 (Tight) | `isaacgym_config_tightplug.yaml` | `data/tight_plug` |
-| S3 (Lidded) | `isaacgym_config_liddedloose.yaml` | `data/lidded_loose` |
-| S4 (Barbed Flat) | `isaacgym_config_barbed_flat.yaml` | `data/barbed_flat` |
-| S5 (Barbed Spike) | `isaacgym_config_barbed_spike.yaml` | `data/barbed_spike` |
-
-### 4.2 Creating the Slurm Submission Script
-
+To run CONTACT training on the cluster, you need a Slurm job script.
 Create a file named `job_submit.sh`:
 
 ```bash
@@ -145,8 +120,9 @@ Paste the following script into it:
 >   ```
 > - Confirm that the `cd` command correctly points to your `CONTACT` repository path, matching the actual location of your `CONTACT` repo on the cluster.
 >   ```
->   cd /path/to/cluster/[user]/contact_ws/CONTACT
+>   cd /path/to/cluster/[user]/CONTACT
 >   ```
+
 
 ```bash
 #!/bin/bash
@@ -185,7 +161,7 @@ apptainer exec --nv ${CONTAINER_FILE} bash -c "
     source ~/.bashrc
     conda activate contact
     export LD_LIBRARY_PATH=\${CONDA_PREFIX}/lib:\${LD_LIBRARY_PATH}
-    cd /path/to/cluster/[user]/contact_ws/CONTACT
+    cd /path/to/cluster/[user]/CONTACT
     python train.py \
         --config-name=train_diffusion_workspace_disassembly.yaml \
         task=${TASK_NAME} \
@@ -196,7 +172,7 @@ apptainer exec --nv ${CONTAINER_FILE} bash -c "
         training.num_epochs=${NUM_EPOCH} \
         task.dataset.max_train_episodes=${NUM_DEMOS} \
         hydra.run.dir=data/outputs/${EXP_NAME}/${SEED} \
-        logging.project=${LOG_NAME}
+        logging.project=${LOG_NAME} \
 "
 EOT
 
@@ -225,54 +201,97 @@ done
 
 ---
 
-### 4.3 Submitting the Training Job
+### 4.2 Submitting the Training Job
 
-Grant run permission and submit:
+Once the script is ready, grant the run permission
 
 ```bash
 chmod +x job_submit.sh
+```
+
+then, submit it using:
+
+```bash
 ./job_submit.sh
 ```
 
-Slurm will schedule the job. Logs appear in the `logs/` directory. Success rates and rollout videos are logged to W&B.
+Slurm will schedule your job, and logs will appear in the `logs/` directory.
+
+If everything runs correctly, you will see the success rate and selected simulation rollouts logged to your W&B account.
 
 ---
 
-### 4.4 Running Vision + TacRGB Policy
+### 4.3 Running Vision + TacRGB Policy
 
-To train the Vision + TacRGB policy, modify the following fields in your `job_submit.sh`:
+To run the vision+tacRGB policy for the Barbed Flat task, create a new copy of the bash script file `job_submit.sh` and/or modify the following two fields in your `job_submit.sh` script:
 
 ```bash
 TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly
 INPUT_TYPE="vistac"
 ```
 
-Then submit with `./job_submit.sh`.
+After updating, submit the script file:
+
+```bash
+./job_submit.sh
+```
 
 ---
 
-### 4.5 Running Vision + TacFF Policy
+### 4.4 Running Vision + TacFF Policy
 
-To train the Vision + TacFF policy, modify the following fields in your `job_submit.sh`:
+To run the vision+tacFF (tactile force-field) policy for the Barbed Flat task, create a new copy of the bash script file `job_submit.sh` and/or modify the following two fields in your `job_submit.sh` script:
 
 ```bash
 TASK_NAME=vision_tacff_disassembly
 INPUT_TYPE="tacff"
 ```
 
-Then submit with `./job_submit.sh`.
+After updating, submit the script file:
 
----
+```bash
+./job_submit.sh
+```
 
-### 4.6 Running Other Tasks
+### 4.5 Run Other CONTACT Tasks
 
-To switch tasks, update `DATASET_PATH`, `ISAACGYM_CONFIG`, `ENV`, and `LOG_NAME` in your `job_submit.sh`. For example, to run Task S1 (Loose Plug):
+You can run any CONTACT task by preparing the dataset and updating your `job_submit.sh` script.
+
+First, download and unzip the demo dataset for your target task from the [CONTACT dataset link](https://drive.google.com/drive/folders/1FqhPtE4S8JfbGgZU9uFjm-rjhGslpqEy?usp=sharing), then place the extracted folder inside the `CONTACT/data` directory.
+
+Next, create a new copy of `job_submit.sh` or modify your existing one by updating the following fields:
+
+| Task | `DATASET_PATH` | `ISAACGYM_CONFIG` |
+|------|-----------------|-------------------|
+| S1 (Loose) | `data/loose_plug` | `isaacgym_config_looseplug.yaml` |
+| S2 (Tight) | `data/tight_plug` | `isaacgym_config_tightplug.yaml` |
+| S3 (Lidded) | `data/lidded_loose` | `isaacgym_config_liddedloose.yaml` |
+| S4 (Barbed Flat) | `data/barbed_flat` | `isaacgym_config_barbed_flat.yaml` |
+| S5 (Barbed Spike) | `data/barbed_spike` | `isaacgym_config_barbed_spike.yaml` |
+
+For example, to run Task S1 (Loose Plug):
 
 ```bash
 DATASET_PATH=data/loose_plug
 ISAACGYM_CONFIG="isaacgym_config_looseplug.yaml"
 ENV="loose_plug"
 LOG_NAME="dp_loose_plug_vision"
+TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly
+INPUT_TYPE="vision"
+```
+
+> **Note:**
+> You can modify `TASK_NAME` and `INPUT_TYPE` to match the sensing configuration you want to test
+> (vision-only, vision+tacRGB, or vision+tacFF).
+> The valid task names for each modality are:
+> - `TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly` for vision-only
+> - `TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly` for vision+tacRGB
+> - `TASK_NAME=vision_tacff_disassembly` for vision+tacFF
+
+After updating your script, start the run:
+
+```bash
+./job_submit.sh
 ```
 
 > **Important:**
@@ -280,80 +299,98 @@ LOG_NAME="dp_loose_plug_vision"
 > `DATASET_PATH`, `ISAACGYM_CONFIG`, and `TASK_NAME`.
 > Other fields primarily affect file naming and experiment logging.
 >
-> You can freely adjust `SEED`, `NUM_DEMOS`, and `NUM_EPOCH` to control the random seed, number of demonstrations, and total training epochs.
+> You can freely adjust `SEED`, `NUM_DEMOS`, and `NUM_EPOCH` to control the randomness seed, number of demonstrations used for training, and total training epochs.
 
 ---
 
-## 5. Training Locally
+## 5. Run CONTACT Locally (PC or Workstation)
 
-For local machines (PC/workstation), use `scripts/run_local.sh`:
+This section mirrors the Cluster workflow but runs training directly on a local machine without Slurm. It assumes:
+
+* `contact.sif` has already been built
+* The `contact` Conda environment
+* `scripts/run_local.sh` is available
+
+---
+
+### 5.1 Prepare the Local Script
+
+Grant execution permission to the local script:
 
 ```bash
 chmod +x scripts/run_local.sh
 ```
 
-### 5.1 Running Vision-Only Policy
+You can now launch training directly from your workstation. Logs and checkpoints will be saved under `data/outputs/${EXP_NAME}/${SEED}`. If everything runs correctly, you will see success rate metrics and rollout videos logged to your W&B account.
+
+### 5.2 Running Vision-Only Policy
+To run the vision-only **Barbed Flat** policy, override the following variables at launch time:
 
 ```bash
 DATASET_PATH=data/barbed_flat \
 ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
 TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
 INPUT_TYPE=vision \
-ENV_TAG=barbed_flat \
-LOG_NAME=bf_vision \
 bash scripts/run_local.sh
 ```
 
-### 5.2 Running Vision + TacRGB Policy
+You do not need to edit the script itself; the environment variables passed before the command override the default values inside `run_local.sh`.
+
+### 5.3 Running Vision + TacRGB Policy
+To run the vision + TacRGB policy, override:
 
 ```bash
 DATASET_PATH=data/barbed_flat \
 ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
 TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
 INPUT_TYPE=vistac \
-ENV_TAG=barbed_flat \
-LOG_NAME=bf_vistac \
 bash scripts/run_local.sh
 ```
 
-### 5.3 Running Vision + TacFF Policy
+### 5.4 Running Vision + TacFF Policy
+To run the vision + TacFF (tactile force-field) policy, override:
 
 ```bash
 DATASET_PATH=data/barbed_flat \
 ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
 TASK_NAME=vision_tacff_disassembly \
 INPUT_TYPE=tacff \
-ENV_TAG=barbed_flat \
-LOG_NAME=bf_tacff \
 bash scripts/run_local.sh
 ```
 
-### 5.4 Running Other Tasks
-
-Override `DATASET_PATH`, `ISAACGYM_CONFIG`, `ENV_TAG`, and `LOG_NAME` for other tasks (see Section 4.1 for the configuration reference).
-
-You can also adjust training hyperparameters:
+### 5.5 Running Other CONTACT Tasks Locally
+To run other tasks, override the required fields when launching (see Section 4.5 for the task configuration reference):
 
 ```bash
-SEED=44 \
-NUM_DEMOS=50 \
-NUM_EPOCH=500 \
 DATASET_PATH=data/loose_plug \
 ISAACGYM_CONFIG=isaacgym_config_looseplug.yaml \
 TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
 INPUT_TYPE=vision \
-ENV_TAG=loose_plug \
-LOG_NAME=lp_vision \
 bash scripts/run_local.sh
 ```
 
----
+### 5.6 Important Parameters
+When switching tasks or sensing modalities, the most critical variables are: `DATASET_PATH`, `ISAACGYM_CONFIG`, `TASK_NAME`, `INPUT_TYPE`.
 
-## 6. Evaluation
+You can also adjust training hyperparameters: `SEED`, `NUM_DEMOS`, `NUM_EPOCH`.
 
-Success rates are computed as the average over the final 10 training epochs, each evaluated in 50 environment initializations. Results are averaged over 3 seeds (42, 43, 44), yielding 1500 rollouts per task.
+Example:
+```bash
+SEED=44 \
+NUM_DEMOS=50 \
+NUM_EPOCH=500 \
+DATASET_PATH=data/barbed_spike \
+ISAACGYM_CONFIG=isaacgym_config_barbed_spike.yaml \
+TASK_NAME=vision_tacff_disassembly \
+INPUT_TYPE=tacff \
+bash scripts/run_local.sh
+```
 
-A rollout is deemed successful if the target component is fully extracted and lifted above a predefined height threshold.
+### 5.7 Summary
+The local workflow is identical to the Cluster setup, except:
+  * No Slurm submission or `job_submit.sh`
+  * Direct execution via bash `scripts/run_local.sh`
+  * All sensing configurations are controlled by overriding environment variables at launch time
 
 ---
 
