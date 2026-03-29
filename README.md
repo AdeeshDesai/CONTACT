@@ -285,8 +285,8 @@ INPUT_TYPE="vision"
 > (vision-only, vision+tacRGB, or vision+tacFF).
 > The valid task names for each modality are:
 > - `TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly` for vision-only
-> - `TASK_NAME=vistac_pih_vision_tactile_onecam` for vision+tacRGB
-> - `TASK_NAME=vision_tacff` for vision+tacFF
+> - `TASK_NAME=vistac_pih_vision_tactile_onecam_disassembly` for vision+tacRGB
+> - `TASK_NAME=vision_tacff_disassembly` for vision+tacFF
 
 After updating your script, start the run:
 
