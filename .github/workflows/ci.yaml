@@ -1,4 +1,4 @@
-name: ManiFeel Main Build
+name: CONTACT Main Build
 
 on:
   pull_request:

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot name="power_socket">
+    <link name="power_socket">
+        <visual>
+            <geometry>
+                <mesh filename="../mesh/contact_mesh/lidded_loose_socket.obj"/>                     
+            </geometry>
+            <material name="Black">
+                <color rgba="0 0 0 1"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <mesh filename="../mesh/contact_mesh/lidded_loose_socket.obj"/> 
+            </geometry>
+            <sdf resolution="128"/>
+        </collision>
+    </link>
+</robot>

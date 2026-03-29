@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
 setup(
-  name = 'manifeel',
+  name = 'contact',
   packages = find_packages(),
 )

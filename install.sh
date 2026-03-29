@@ -3,7 +3,7 @@
 set -e  # Exit on any error
 
 echo "=========================================="
-echo "ManiFeel Installation Script"
+echo "CONTACT Installation Script"
 echo "=========================================="
 
 # Check if conda or mamba is available
@@ -42,8 +42,8 @@ PARENT_DIR="$(dirname "$SCRIPT_DIR")"
 CONDA_BASE="$("$CONDA_CMD" info --base 2>/dev/null | tail -n 1 | awk '{print $NF}')"
 
 # Function to prompt the user for the Miniforge/conda home directory.
-# The environment is always named "manifeel" and will be created at
-# <miniforge_home>/envs/manifeel. Press Enter to accept the detected default.
+# The environment is always named "contact" and will be created at
+# <miniforge_home>/envs/contact. Press Enter to accept the detected default.
 # In CI mode (CI=true), the default is used automatically without prompting.
 get_conda_env_path() {
     local default_home="$CONDA_BASE"
@@ -66,13 +66,13 @@ get_conda_env_path() {
         fi
     fi
 
-    CONDA_ENV_PATH="$MINIFORGE_HOME/envs/manifeel"
+    CONDA_ENV_PATH="$MINIFORGE_HOME/envs/contact"
     echo "✓ Environment will be created at: $CONDA_ENV_PATH"
 }
 
 echo ""
 echo "=========================================="
-echo "Setting up ManiFeel environment"
+echo "Setting up CONTACT environment"
 echo "=========================================="
 
 get_conda_env_path
@@ -114,16 +114,16 @@ echo "=========================================="
 
 # Clone IsaacGymEnvs
 if [ "${CI:-false}" = "true" ]; then
-    echo "⏭ Skipping manifeel-isaacgymenvs clone in CI mode"
-elif [ ! -d "$PARENT_DIR/manifeel-isaacgymenvs" ]; then
-    echo "Cloning manifeel-isaacgymenvs..."
+    echo "⏭ Skipping contact-isaacgymenvs clone in CI mode"
+elif [ ! -d "$PARENT_DIR/contact-isaacgymenvs" ]; then
+    echo "Cloning contact-isaacgymenvs..."
     cd "$PARENT_DIR"
-    git clone https://github.com/purdue-mars/manifeel-isaacgymenvs.git
-    cd manifeel-isaacgymenvs
+    git clone https://github.com/purdue-mars/contact-isaacgymenvs.git
+    cd contact-isaacgymenvs
     pip install -e .
 else
-    echo "✓ manifeel-isaacgymenvs already exists"
-    cd "$PARENT_DIR/manifeel-isaacgymenvs"
+    echo "✓ contact-isaacgymenvs already exists"
+    cd "$PARENT_DIR/contact-isaacgymenvs"
     pip install -e .
 fi
 
@@ -142,10 +142,10 @@ fi
 
 echo ""
 echo "=========================================="
-echo "Installing ManiFeel"
+echo "Installing CONTACT"
 echo "=========================================="
 
-# Install ManiFeel
+# Install CONTACT
 cd "$SCRIPT_DIR"
 pip install -e .
 
@@ -163,9 +163,9 @@ echo ""
 echo "Next steps:"
 echo "1. Download IsaacGym_Preview_TacSL_Package (if not already done)"
 echo "   from: https://drive.google.com/file/d/1FHs1tf3QajvYb11UkLaLcDD9THL-C0G5/view"
-echo "2. Download ManiFeel dataset from:"
+echo "2. Download CONTACT dataset from:"
 echo "   https://purdue0-my.sharepoint.com/:f:/g/personal/luu15_purdue_edu/IgClDSeuVGAKR4nlaok2yv2QAaOTl1FiHtebNThmTxuWi5U?e=s6z0jX"
-echo "   and place it in manifeel/data/"
+echo "   and place it in contact/data/"
 echo ""
 echo "To activate the environment:"
 echo "  conda activate $CONDA_ENV_PATH"

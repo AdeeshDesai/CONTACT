@@ -195,4 +195,4 @@ runs/
 logs/
 __pycache__/
 *.pyc
-assets/industreal/mesh/TVB_mesh/car1.obj
+assets/industreal/mesh/contact_mesh/car1.obj

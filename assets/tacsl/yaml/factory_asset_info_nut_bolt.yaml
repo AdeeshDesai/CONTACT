@@ -177,7 +177,7 @@ nut_bolt_m20_loose:
 bulb:
     bulb:
         urdf_par_dir: 'factory'
-        urdf_path: 'manifeel_bulb'
+        urdf_path: 'contact_bulb'
         width_min: 0.030
         width_max: 0.03464102
         height: 0.016
@@ -186,7 +186,7 @@ bulb:
         friction: 0.5
     bulb_socket:
         urdf_par_dir: 'factory'
-        urdf_path: 'manifeel_bulb_socket'
+        urdf_path: 'contact_bulb_socket'
         width: 0.020
         head_height: 0.020
         height: 0.045 # default: shank_length

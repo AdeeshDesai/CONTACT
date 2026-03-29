@@ -21,7 +21,7 @@ IMAGENET_NORM=${IMAGENET_NORM:-false}   # set true for tacff runs if needed
 ACTION_SHAPE=${ACTION_SHAPE:-}          # set to 7 for gripper tasks, leave empty otherwise
 
 # Container file (default assumes you run from repo root and built it there)
-CONTAINER_FILE=${CONTAINER_FILE:-manifeel.sif}
+CONTAINER_FILE=${CONTAINER_FILE:-contact.sif}
 
 # -------------------------
 # Derived names
@@ -62,7 +62,7 @@ fi
 # -------------------------
 apptainer exec --nv --cleanenv --env LD_PRELOAD= "${REPO_ROOT}/${CONTAINER_FILE}" bash -ic "
   set -e
-  conda activate manifeel
+  conda activate contact
   export LD_LIBRARY_PATH=\${CONDA_PREFIX}/lib:\${LD_LIBRARY_PATH}
   cd '${REPO_ROOT}'
   python train.py ${HYDRA_ARGS[*]}
