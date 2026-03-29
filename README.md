@@ -53,7 +53,7 @@ bash install.sh
 ```
 
 The script will:
-- Create a Python 3.8 conda environment named `contact`
+- Create a Python 3.8 conda environment named `manifeel`
 - Install IsaacGym TacSL
 - Clone and install [manifeel-isaacgymenvs](https://github.com/purdue-mars/manifeel-isaacgymenvs) (IsaacGymEnvs + TacSL sensors)
 - Clone and install [Diffusion Policy](https://github.com/real-stanford/diffusion_policy)
@@ -95,15 +95,15 @@ We provide an Apptainer container for reproducible environments across clusters 
 ### 3.1 Build the Container
 
 ```bash
-apptainer build contact.sif contact.def
+apptainer build manifeel.sif manifeel.def
 ```
 
 ### 3.2 Verify the Setup
 
 ```bash
-apptainer exec --nv contact.sif bash
+apptainer exec --nv manifeel.sif bash
 source ~/.bashrc
-conda activate contact
+conda activate manifeel
 export LD_LIBRARY_PATH=${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
 python -c "from isaacgym import gymtorch"
 exit
@@ -138,12 +138,12 @@ Paste the following script into it:
 > **Important:**
 > Before using the job script below, update the following fields:
 >
-> - Replace `[user]` with your cluster username
-> - Ensure `CONTAINER_FILE` points to your `contact.sif` file
+> - Search for `[user]` in the script file and replace `[user]` with your own cluster username.
+> - Ensure that `CONTAINER_FILE` correctly points to where you stored your `manifeel.sif` file
 >   ```
->   CONTAINER_FILE=/path/to/cluster/[user]/contact.sif
+>   CONTAINER_FILE=/path/to/cluster/[user]/manifeel.sif
 >   ```
-> - Confirm the `cd` command points to your `CONTACT` repository path
+> - Confirm that the `cd` command correctly points to your `CONTACT` repository path, matching the actual location of your `CONTACT` repo on the cluster.
 >   ```
 >   cd /path/to/cluster/[user]/contact_ws/CONTACT
 >   ```
@@ -152,6 +152,7 @@ Paste the following script into it:
 #!/bin/bash
 
 SEED=42
+
 NUM_DEMOS=50
 NUM_EPOCH=500
 DATASET_PATH=data/barbed_flat
@@ -162,9 +163,9 @@ TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly
 INPUT_TYPE="vision"
 EXP_NAME="${INPUT_TYPE}_${ENV}_${NUM_DEMOS}"
 
-JOB_NAME="${EXP_NAME}_${SEED}"
+JOB_NAME="${EXP_NAME}_${SEED}" # The name of the Slurm job to monitor
 
-CONTAINER_FILE=/path/to/cluster/[user]/contact.sif
+CONTAINER_FILE=/path/to/cluster/[user]/manifeel.sif
 
 cat <<EOT > job_script_${JOB_NAME}.sh
 #!/bin/bash
@@ -182,7 +183,7 @@ cat <<EOT > job_script_${JOB_NAME}.sh
 # Run the commands inside the Apptainer container
 apptainer exec --nv ${CONTAINER_FILE} bash -c "
     source ~/.bashrc
-    conda activate contact
+    conda activate manifeel
     export LD_LIBRARY_PATH=\${CONDA_PREFIX}/lib:\${LD_LIBRARY_PATH}
     cd /path/to/cluster/[user]/contact_ws/CONTACT
     python train.py \
@@ -201,16 +202,23 @@ EOT
 
 # Infinite loop to monitor and resubmit the job
 while true; do
+    # Check if the job is currently running
     JOB_ID=$(squeue --name=$JOB_NAME --noheader --format=%A)
 
     if [ -z "$JOB_ID" ]; then
+        # If no job with the specified name is running, resubmit the job
         echo "Job $JOB_NAME is not running. Resubmitting..."
+        # Submit the dynamically created script
         sbatch job_script_${JOB_NAME}.sh
+
+        # Wait a few seconds to avoid rapid resubmission
         sleep 10
     else
+        # Output a message indicating the job is still running
         echo "Job $JOB_NAME is still running (Job ID: $JOB_ID)."
     fi
 
+    # Wait for a specified interval before checking the job status again
     sleep 30
 done
 ```
