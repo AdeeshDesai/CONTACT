@@ -78,7 +78,6 @@ env:
     num_shear_cols: 14
     zero_out_normal_force_field_obs: False  # flag to set the normal force field to zero and only use shear force field
     asset_info_filename: 'Disassemble.yaml'   # industreal_asset_info_pegs.yaml, tacsl_asset_info_peg_placement.yaml, tacsl_asset_info_bolt_on_nut.yaml
-    # 🖐🖐🖐 power_3prongs, power_2prongs_shape1, power_2prongs_shape2:power_2prongs_shape3, USB_plug3
     desired_subassemblies: [ 'barbed_flat']    # see all options in FactoryEnvInsertion.yaml
     
     franka_urdf_file: 'tacsl_franka_gelsight_r15.urdf'
