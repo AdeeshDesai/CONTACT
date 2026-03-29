@@ -114,16 +114,16 @@ echo "=========================================="
 
 # Clone IsaacGymEnvs
 if [ "${CI:-false}" = "true" ]; then
-    echo "⏭ Skipping contact-isaacgymenvs clone in CI mode"
-elif [ ! -d "$PARENT_DIR/contact-isaacgymenvs" ]; then
-    echo "Cloning contact-isaacgymenvs..."
+    echo "⏭ Skipping manifeel-isaacgymenvs clone in CI mode"
+elif [ ! -d "$PARENT_DIR/manifeel-isaacgymenvs" ]; then
+    echo "Cloning manifeel-isaacgymenvs (IsaacGymEnvs + TacSL)..."
     cd "$PARENT_DIR"
-    git clone https://github.com/purdue-mars/contact-isaacgymenvs.git
-    cd contact-isaacgymenvs
+    git clone https://github.com/purdue-mars/manifeel-isaacgymenvs.git
+    cd manifeel-isaacgymenvs
     pip install -e .
 else
-    echo "✓ contact-isaacgymenvs already exists"
-    cd "$PARENT_DIR/contact-isaacgymenvs"
+    echo "✓ manifeel-isaacgymenvs already exists"
+    cd "$PARENT_DIR/manifeel-isaacgymenvs"
     pip install -e .
 fi
 
