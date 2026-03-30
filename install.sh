@@ -148,6 +148,15 @@ echo "Copying CONTACT task files into manifeel-isaacgymenvs..."
 cp "$SCRIPT_DIR"/isaacgymenvs/tasks/tacsl/*.py "$PARENT_DIR/manifeel-isaacgymenvs/isaacgymenvs/tasks/tacsl/"
 echo "✓ CONTACT task files installed"
 
+# Link CONTACT assets into manifeel-isaacgymenvs so IsaacGym can find them
+echo "Linking CONTACT assets into manifeel-isaacgymenvs..."
+# Link industreal URDFs and meshes
+cp -r "$SCRIPT_DIR"/assets/industreal/urdf/* "$PARENT_DIR/manifeel-isaacgymenvs/assets/industreal/urdf/" 2>/dev/null || true
+cp -r "$SCRIPT_DIR"/assets/industreal/mesh/contact_mesh "$PARENT_DIR/manifeel-isaacgymenvs/assets/industreal/mesh/" 2>/dev/null || true
+# Link tacsl assets (Disassemble.yaml and others)
+cp "$SCRIPT_DIR"/assets/tacsl/yaml/Disassemble.yaml "$PARENT_DIR/manifeel-isaacgymenvs/assets/tacsl/yaml/" 2>/dev/null || true
+echo "✓ CONTACT assets installed"
+
 echo ""
 echo "=========================================="
 echo "Installing CONTACT"
