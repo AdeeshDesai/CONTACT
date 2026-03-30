@@ -85,6 +85,14 @@ env:
 
     use_camera: True
     camera_configs:
+        - name: client
+          is_body_camera: False
+          actor_name: null
+          attach_link_name: null
+          image_size: [256, 256]
+          image_type: rgb
+          horizontal_fov: 75.0
+          camera_pose: [[0.9, 0.0, 0.35], [-0.092, 0.0, 0.996, 0.0]]
         - name: wrist
           is_body_camera: True
           actor_name: franka
