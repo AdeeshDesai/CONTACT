@@ -3,12 +3,11 @@ from gym import spaces
 import isaacgym
 # import isaacgymenvs
 # from isaacgymenvs.utils.utils import set_seed
-from isaacgymenvs.tasks.tacsl.tacsl_task_insertion import TacSLTaskInsertion
-from isaacgymenvs.tasks.tacsl.tacsl_task_power import TacSLTaskPowerInsertion
-from isaacgymenvs.tasks.tacsl.tacsl_task_gear import TacSLTaskGear
-from isaacgymenvs.tasks.tacsl.tacsl_task_peg_reorientation import TacSLTaskPegReorientation
-from isaacgymenvs.tasks.tacsl.tacsl_task_object_search import TacSLTaskObjectSearch
-from isaacgymenvs.tasks.tacsl.tacsl_task_ball_sorting import TacSLTaskBallSorting
+from isaacgymenvs.tasks.tacsl.tacsl_task_barbed_flat import TacSLTaskBarbedFlat
+from isaacgymenvs.tasks.tacsl.tacsl_task_barbed_spike import TacSLTaskBarbedSpike
+from isaacgymenvs.tasks.tacsl.tacsl_task_lidded_loose_plug import TacSLTaskLiddedLoose
+from isaacgymenvs.tasks.tacsl.tacsl_task_loose_plug import TacSLTaskLoosePlug
+from isaacgymenvs.tasks.tacsl.tacsl_task_tight_plug import TacSLTaskTightPlug
 
 from isaacgymenvs.utils.reformat import omegaconf_to_dict
 

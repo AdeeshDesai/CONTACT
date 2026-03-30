@@ -113,9 +113,7 @@ echo "Cloning repositories"
 echo "=========================================="
 
 # Clone IsaacGymEnvs
-if [ "${CI:-false}" = "true" ]; then
-    echo "⏭ Skipping manifeel-isaacgymenvs clone in CI mode"
-elif [ ! -d "$PARENT_DIR/manifeel-isaacgymenvs" ]; then
+if [ ! -d "$PARENT_DIR/manifeel-isaacgymenvs" ]; then
     echo "Cloning manifeel-isaacgymenvs (IsaacGymEnvs + TacSL)..."
     cd "$PARENT_DIR"
     git clone https://github.com/purdue-mars/manifeel-isaacgymenvs.git
@@ -139,6 +137,16 @@ else
     cd "$PARENT_DIR/diffusion_policy"
     pip install -e .
 fi
+
+echo ""
+echo "=========================================="
+echo "Installing CONTACT task files"
+echo "=========================================="
+
+# Copy CONTACT task files into manifeel-isaacgymenvs so they are importable
+echo "Copying CONTACT task files into manifeel-isaacgymenvs..."
+cp "$SCRIPT_DIR"/isaacgymenvs/tasks/tacsl/*.py "$PARENT_DIR/manifeel-isaacgymenvs/isaacgymenvs/tasks/tacsl/"
+echo "✓ CONTACT task files installed"
 
 echo ""
 echo "=========================================="

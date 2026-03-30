@@ -3,15 +3,11 @@ from gym import spaces
 import isaacgym
 # import isaacgymenvs
 # from isaacgymenvs.utils.utils import set_seed
-from isaacgymenvs.tasks.tacsl.tacsl_task_insertion import TacSLTaskInsertion
-from isaacgymenvs.tasks.tacsl.tacsl_task_gear import TacSLTaskGear
-from isaacgymenvs.tasks.tacsl.tacsl_task_USB import TacSLTaskUSB
-from isaacgymenvs.tasks.tacsl.tacsl_task_power import TacSLTaskPowerInsertion
-from isaacgymenvs.tasks.tacsl.tacsl_task_bolt_nut import TacSLTaskBoltNut
-from isaacgymenvs.tasks.tacsl.tacsl_task_bulb import TacSLTaskBulb
-from isaacgymenvs.tasks.tacsl.tacsl_task_peg_reorientation import TacSLTaskPegReorientation
-from isaacgymenvs.tasks.tacsl.tacsl_task_object_search import TacSLTaskObjectSearch
-from isaacgymenvs.tasks.tacsl.tacsl_task_ball_sorting import TacSLTaskBallSorting
+from isaacgymenvs.tasks.tacsl.tacsl_task_barbed_flat import TacSLTaskBarbedFlat
+from isaacgymenvs.tasks.tacsl.tacsl_task_barbed_spike import TacSLTaskBarbedSpike
+from isaacgymenvs.tasks.tacsl.tacsl_task_lidded_loose_plug import TacSLTaskLiddedLoose
+from isaacgymenvs.tasks.tacsl.tacsl_task_loose_plug import TacSLTaskLoosePlug
+from isaacgymenvs.tasks.tacsl.tacsl_task_tight_plug import TacSLTaskTightPlug
 
 from isaacgymenvs.utils.reformat import omegaconf_to_dict
 
@@ -27,15 +23,11 @@ from omegaconf import DictConfig, OmegaConf
 
 # Mappings from strings to environments
 isaacgym_task_map = {
-    "TacSLTaskInsertion": TacSLTaskInsertion,
-    "TacSLTaskUSB": TacSLTaskUSB,
-    "TacSLTaskGear": TacSLTaskGear,
-    "TacSLTaskPowerInsertion": TacSLTaskPowerInsertion,
-    "TacSLTaskPegReorientation": TacSLTaskPegReorientation,
-    "TacSLTaskBoltNut": TacSLTaskBoltNut,
-    "TacSLTaskBulb": TacSLTaskBulb,
-    "TacSLTaskObjectSearch": TacSLTaskObjectSearch,
-    "TacSLTaskBallSorting": TacSLTaskBallSorting,
+    "TacSLTaskBarbedFlat": TacSLTaskBarbedFlat,
+    "TacSLTaskBarbedSpike": TacSLTaskBarbedSpike,
+    "TacSLTaskLiddedLoose": TacSLTaskLiddedLoose,
+    "TacSLTaskLoosePlug": TacSLTaskLoosePlug,
+    "TacSLTaskTightPlug": TacSLTaskTightPlug,
 }
 
 class MultipleIsaacEnvWrapper():
