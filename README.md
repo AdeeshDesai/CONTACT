@@ -134,8 +134,8 @@ NUM_EPOCH=500
 DATASET_PATH=data/barbed_flat
 ISAACGYM_CONFIG="isaacgym_config_barbed_flat.yaml"
 ENV="barbed_flat"
-LOG_NAME="dp_barbed_flat_vision"
-TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly
+LOG_NAME="dp_barbed_flat"
+TASK_NAME=vision_disassembly
 INPUT_TYPE="vision"
 EXP_NAME="${INPUT_TYPE}_${ENV}_${NUM_DEMOS}"
 
@@ -226,7 +226,7 @@ If everything runs correctly, you will see the success rate and selected simulat
 To run the vision+tacRGB policy for the Barbed Flat task, create a new copy of the bash script file `job_submit.sh` and/or modify the following two fields in your `job_submit.sh` script:
 
 ```bash
-TASK_NAME=vistac_pih_vision_tactile_onecam_disassembly
+TASK_NAME=vistac_disassembly
 INPUT_TYPE="vistac"
 ```
 
@@ -243,7 +243,7 @@ After updating, submit the script file:
 To run the vision+tacFF (tactile force-field) policy for the Barbed Flat task, create a new copy of the bash script file `job_submit.sh` and/or modify the following two fields in your `job_submit.sh` script:
 
 ```bash
-TASK_NAME=vision_tacff_disassembly
+TASK_NAME=visff_disassembly
 INPUT_TYPE="tacff"
 ```
 
@@ -275,8 +275,8 @@ For example, to run Task S1 (Loose Plug):
 DATASET_PATH=data/loose_plug
 ISAACGYM_CONFIG="isaacgym_config_looseplug.yaml"
 ENV="loose_plug"
-LOG_NAME="dp_loose_plug_vision"
-TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly
+LOG_NAME="dp_loose_plug"
+TASK_NAME=vision_disassembly
 INPUT_TYPE="vision"
 ```
 
@@ -284,9 +284,9 @@ INPUT_TYPE="vision"
 > You can modify `TASK_NAME` and `INPUT_TYPE` to match the sensing configuration you want to test
 > (vision-only, vision+tacRGB, or vision+tacFF).
 > The valid task names for each modality are:
-> - `TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly` for vision-only
-> - `TASK_NAME=vistac_pih_vision_tactile_onecam_disassembly` for vision+tacRGB
-> - `TASK_NAME=vision_tacff_disassembly` for vision+tacFF
+> - `TASK_NAME=vision_disassembly` for vision-only
+> - `TASK_NAME=vistac_disassembly` for vision+tacRGB
+> - `TASK_NAME=visff_disassembly` for vision+tacFF
 
 After updating your script, start the run:
 
@@ -329,7 +329,7 @@ To run the vision-only **Barbed Flat** policy, override the following variables 
 ```bash
 DATASET_PATH=data/barbed_flat \
 ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
-TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
+TASK_NAME=vision_disassembly \
 INPUT_TYPE=vision \
 bash scripts/run_local.sh
 ```
@@ -342,7 +342,7 @@ To run the vision + TacRGB policy, override:
 ```bash
 DATASET_PATH=data/barbed_flat \
 ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
-TASK_NAME=vistac_pih_vision_tactile_onecam_disassembly \
+TASK_NAME=vistac_disassembly \
 INPUT_TYPE=vistac \
 bash scripts/run_local.sh
 ```
@@ -353,7 +353,7 @@ To run the vision + TacFF (tactile force-field) policy, override:
 ```bash
 DATASET_PATH=data/barbed_flat \
 ISAACGYM_CONFIG=isaacgym_config_barbed_flat.yaml \
-TASK_NAME=vision_tacff_disassembly \
+TASK_NAME=visff_disassembly \
 INPUT_TYPE=tacff \
 bash scripts/run_local.sh
 ```
@@ -364,7 +364,7 @@ To run other tasks, override the required fields when launching (see Section 4.5
 ```bash
 DATASET_PATH=data/loose_plug \
 ISAACGYM_CONFIG=isaacgym_config_looseplug.yaml \
-TASK_NAME=vistac_pih_multiple_vision_onecam_disassembly \
+TASK_NAME=vision_disassembly \
 INPUT_TYPE=vision \
 bash scripts/run_local.sh
 ```
@@ -381,7 +381,7 @@ NUM_DEMOS=50 \
 NUM_EPOCH=500 \
 DATASET_PATH=data/barbed_spike \
 ISAACGYM_CONFIG=isaacgym_config_barbed_spike.yaml \
-TASK_NAME=vision_tacff_disassembly \
+TASK_NAME=visff_disassembly \
 INPUT_TYPE=tacff \
 bash scripts/run_local.sh
 ```
