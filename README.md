@@ -14,17 +14,11 @@ CONTACT provides an automated installation script that handles all setup steps.
 
 ### Prerequisites
 
-- **Download the TacSL specific Isaac Gym binary** from [here](https://drive.google.com/file/d/13dFRF9EXpzIWaJF2Z6f7BsuPUGQkPE8v/view?usp=sharing) and extract it to the parent directory of the CONTACT repository:
+Create a workspace directory and download the TacSL specific Isaac Gym binary from [here](https://drive.google.com/file/d/13dFRF9EXpzIWaJF2Z6f7BsuPUGQkPE8v/view?usp=sharing):
 
 ```bash
+mkdir contact_ws && cd contact_ws
 tar -xvzf IsaacGym_Preview_TacSL_Package.tar.gz
-```
-
-The directory structure should look like:
-```
-parent_directory/
-├── IsaacGym_Preview_TacSL_Package/
-└── CONTACT/
 ```
 
 ### Automated Installation
@@ -44,6 +38,15 @@ The installation script will:
 - Clone and install manifeel-isaacgymenvs (TacSL fork)
 - Clone and install Diffusion Policy
 - Install CONTACT and all dependencies
+
+After installation, the workspace should look like:
+```
+contact_ws/
+├── CONTACT/                          # This repository
+├── manifeel-isaacgymenvs/            # IsaacGymEnvs + TacSL (cloned by install.sh)
+├── IsaacGym_Preview_TacSL_Package/   # IsaacGym binary (downloaded manually)
+└── diffusion_policy/                 # Diffusion Policy (cloned by install.sh)
+```
 ---
 
 ## 2. Download CONTACT dataset
