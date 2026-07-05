@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="vtab_2026_0120_1738_joint_stiffness">
+  <joint name="Revolute_1" type="revolute">
+    <origin xyz="0. -0.0102862 0.015464 " rpy="-3.1415927 -1.5707964 0. "/>
+    <parent link="World"/>
+    <child link="Group_plug_tab"/>
+    <axis xyz="0. 0. 1."/>
+    <limit lower="0." upper="0." effort="1000." velocity="0."/>
+  </joint>
+  <link name="Group_plug_tab">
+    <inertial>
+      <origin xyz="0.0158159 0.0052297 0. " rpy="0. 0. 0."/>
+      <mass value="0.0022482"/>
+      <inertia ixx="0.0000002" ixy="0." ixz="0." iyy="0.0000002" iyz="0." izz="0.0000004"/>
+    </inertial>
+    <visual>
+      <origin xyz="0.0005359 -0.01025 -0.0195 " rpy="0. 0. 0."/>
+      <geometry>
+        <mesh filename="../mesh/contact_mesh/Group_plug_tab_plug_tab.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0005359 -0.01025 -0.0195 " rpy="0. 0. 0."/>
+      <geometry>
+        <mesh filename="../mesh/contact_mesh/Group_plug_tab_plug_tab.obj" scale="1. 1. 1."/>
+      </geometry>
+    </collision>
+  </link>
+  <link name="World">
+    <inertial>
+      <origin xyz="0. 0.0024537 0.028 " rpy="0. 0. 0."/>
+      <mass value="0.0451284"/>
+      <inertia ixx="0.0000107" ixy="0." ixz="-0." iyy="0.0000084" iyz="0." izz="0.0000071"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.0195 -0.0000362 0.016 " rpy="-3.1415927 -1.5707964 0. "/>
+      <geometry>
+        <mesh filename="../mesh/contact_mesh/Group_plug_base_plug_base.obj" scale="1. 1. 1."/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="-0.0195 -0.0000362 0.016 " rpy="-3.1415927 -1.5707964 0. "/>
+      <geometry>
+        <mesh filename="../mesh/contact_mesh/Group_plug_base_plug_base.obj" scale="1. 1. 1."/>
+      </geometry>
+    </collision>
+  </link>
+</robot>
