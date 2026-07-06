@@ -98,7 +98,7 @@ optimizer:
   weight_decay: 1.0e-6
 
 training:
-  device: "cuda:0" # default: cuda:0
+  device: "cuda:0"
   seed: 42
   debug: False
   resume: True
@@ -112,10 +112,10 @@ training:
   use_ema: True
   # training loop control
   # in epochs
-  rollout_every: 10
-  checkpoint_every: 2 # default: 50
+  rollout_every: 50
+  checkpoint_every: 50
   val_every: 10000
-  sample_every: 10000 # default: 5
+  sample_every: 10000
   # steps per epoch
   max_train_steps: null
   max_val_steps: null
