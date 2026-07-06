@@ -112,7 +112,7 @@ training:
   use_ema: True
   # training loop control
   # in epochs
-  rollout_every: 20 # default: 50
+  rollout_every: 10
   checkpoint_every: 2 # default: 50
   val_every: 10000
   sample_every: 10000 # default: 5
