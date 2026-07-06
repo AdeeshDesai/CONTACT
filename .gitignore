@@ -2,6 +2,7 @@
 outputs/
 data/
 wandb/
+thirdparty/
 # assets/
 
 # Byte-compiled / optimized / DLL files

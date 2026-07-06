@@ -42,21 +42,19 @@ with Diffusion Policy using multimodal visuotactile observations.
 
 ## Installation
 
-Download the TacSL-specific IsaacGym binary from
-[here](https://drive.google.com/file/d/13dFRF9EXpzIWaJF2Z6f7BsuPUGQkPE8v/view?usp=sharing),
-then:
-
 ```bash
-mkdir contact_ws && cd contact_ws
-tar -xvzf IsaacGym_Preview_TacSL_Package.tar.gz
 git clone https://github.com/AdeeshDesai/CONTACT.git
 cd CONTACT
 bash install.sh
 conda activate contact
 ```
 
-The installation script creates the `contact` conda environment and installs
-IsaacGym TacSL, the TacSL simulation environments, Diffusion Policy, and CONTACT.
+The installation script creates the `contact` conda environment and sets up
+the dependencies under `thirdparty/`: IsaacGym TacSL (downloaded
+automatically), the TacSL simulation environments, and Diffusion Policy. If
+the automatic IsaacGym download fails, grab it manually from
+[here](https://drive.google.com/file/d/13dFRF9EXpzIWaJF2Z6f7BsuPUGQkPE8v/view?usp=sharing),
+place the tar.gz in `thirdparty/`, and rerun `install.sh`.
 
 ## Dataset
 
@@ -122,6 +120,7 @@ CONTACT/
 ├── isaacgymenvs/ tacsl/      # TacSL task and environment definitions
 ├── assets/                   # task meshes and URDFs
 ├── scripts/                  # run_all.sh sweeps, dataset download
+├── thirdparty/               # simulator + policy stack land here at install
 └── install.sh
 ```
 
