@@ -15,7 +15,7 @@ CONtact-aware TACTile Learning for Robotic Disassembly</h2>
 <a href="https://www.linkedin.com/in/adeeshdesai/">Adeesh Desai</a>*,
 <a href="https://zhangzhiyuanzhang.github.io/personal_website/">Zhiyuan Zhang</a>*,
 <br>
-Bihao Zhang,
+<a href="https://www.linkedin.com/in/bihao-zhang-861754352/">Bihao Zhang</a>,
 <a href="https://quan-luu.github.io/">Quan Khanh Luu</a>,
 <a href="https://prince-css.github.io/#">Md Rakibul Islam Prince</a>,
 <a href="https://zh.engr.tamu.edu/">Minghui Zheng</a>,
