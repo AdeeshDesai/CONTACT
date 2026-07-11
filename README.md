@@ -32,6 +32,10 @@ implemented in IsaacGym with TacSL-based tactile rendering. Policies are trained
 with Diffusion Policy using multimodal visuotactile observations.
 </p>
 
+<p align="center">
+<img src="media/teaser.svg" alt="CONTACT task suite across simulation and the real world" width="90%" />
+</p>
+
 ## Highlights
 
 - **Five disassembly tasks**: `loose_plug`, `tight_plug`, `lidded_loose`,
