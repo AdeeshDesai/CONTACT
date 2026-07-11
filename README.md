@@ -33,7 +33,7 @@ with Diffusion Policy using multimodal visuotactile observations.
 </p>
 
 <p align="center">
-<img src="media/teaser.svg" alt="CONTACT task suite across simulation and the real world" width="42%" />
+<img src="media/teaser.svg" alt="CONTACT task suite across simulation and the real world" width="50%" />
 </p>
 
 ## Highlights
