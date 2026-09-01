@@ -130,3 +130,97 @@ docker exec contact-rocm714 python -m pip check
 ```
 
 Result: `No broken requirements found.`
+
+## S2: barbed_flat dataset and offline evaluation
+
+Install the dataset download and extraction tools:
+
+```bash
+docker exec contact-rocm714 python -m pip install gdown
+docker exec contact-rocm714 bash -lc \
+  "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends unzip"
+```
+
+The repository download script currently asks Google Drive for the entire
+folder even when one task is requested:
+
+```bash
+docker exec contact-rocm714 bash scripts/download_data.sh barbed_flat
+```
+
+The completed `barbed_flat.zip` was retained and the downloads of the other
+tasks were stopped and removed. The extracted dataset is 413 MB.
+
+Verified dataset:
+
+```text
+episodes=50
+dataset_len=3222
+front=(2, 3, 256, 256)
+wrist=(2, 3, 256, 256)
+tactile_force_field_right=(2, 3, 10, 14)
+state=(2, 7)
+action=(16, 7)
+```
+
+Run one TacFF train step, one validation step, and a 10-step diffusion sample:
+
+```bash
+docker exec \
+  -e USE_SIM=0 \
+  -e WANDB_MODE=disabled \
+  contact-rocm714 \
+  python train.py \
+  --config-name=train_diffusion_workspace_disassembly.yaml \
+  task=visff_disassembly \
+  dataset_path=data/barbed_flat \
+  training.enable_rollout=false \
+  training.device=auto \
+  training.seed=42 \
+  training.resume=false \
+  training.num_epochs=1 \
+  training.max_train_steps=1 \
+  training.max_val_steps=1 \
+  training.val_every=1 \
+  training.sample_every=1 \
+  training.checkpoint_every=10000 \
+  checkpoint.save_last_ckpt=false \
+  logging.mode=disabled \
+  dataloader.batch_size=1 \
+  dataloader.num_workers=0 \
+  val_dataloader.batch_size=1 \
+  val_dataloader.num_workers=0 \
+  policy.num_inference_steps=10 \
+  hydra.run.dir=data/outputs/s2-one-step
+```
+
+Verified metrics:
+
+```text
+train_loss=0.9548164010047913
+val_loss=0.9805130958557129
+train_action_mse_error=0.6669871807098389
+```
+
+For the three-epoch short run, change `training.num_epochs=3` and use
+`hydra.run.dir=data/outputs/s2-short-run`. Each epoch was limited to one train
+and one validation batch.
+
+```text
+epoch  train_loss          val_loss            train_action_mse_error
+0      0.9548164010047913  0.9805130958557129  0.6669871807098389
+1      1.1557873487472534  1.0857679843902588  0.6440054178237915
+2      1.0130190849304200  1.1079219579696655  0.6709109544754028
+```
+
+Repeating the three-epoch command with the same seed produced a byte-identical
+metrics log:
+
+```text
+cbda52ab6e5352dde1886069a5a1ab27745f62c0ffdc890de5ae4f9c9fc83a29
+```
+
+The container does not contain IsaacGym. Both runs exited successfully, which
+verifies that `training.enable_rollout=false` did not import or instantiate
+the NVIDIA runner. No NVIDIA reference curve was available, so these metrics
+are an AMD smoke-test baseline only, not a cross-hardware equivalence claim.
