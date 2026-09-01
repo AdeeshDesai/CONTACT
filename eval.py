@@ -6,19 +6,25 @@ python eval.py \
 -d cuda:0
 """
 
-# IsaacGym links against the conda env's libpython, which the system linker
-# cannot find on its own; preloading it removes the need to export
-# LD_LIBRARY_PATH=$CONDA_PREFIX/lib.
-import ctypes as _ctypes
 import os as _os
-import sys as _sys
-_libpython = _os.path.join(
-    _sys.prefix, 'lib',
-    f'libpython{_sys.version_info.major}.{_sys.version_info.minor}.so.1.0')
-if _os.path.exists(_libpython):
-    _ctypes.CDLL(_libpython, mode=_ctypes.RTLD_GLOBAL)
 
-import isaacgym
+_USE_SIM = _os.getenv("USE_SIM", "1").strip().lower() not in {
+    "0", "false", "no", "off"
+}
+if _USE_SIM:
+    # IsaacGym links against the conda env's libpython, which the system linker
+    # cannot find on its own; preloading it removes the need to export
+    # LD_LIBRARY_PATH=$CONDA_PREFIX/lib.
+    import ctypes as _ctypes
+    import sys as _sys
+
+    _libpython = _os.path.join(
+        _sys.prefix, 'lib',
+        f'libpython{_sys.version_info.major}.{_sys.version_info.minor}.so.1.0')
+    if _os.path.exists(_libpython):
+        _ctypes.CDLL(_libpython, mode=_ctypes.RTLD_GLOBAL)
+
+    import isaacgym
 
 import sys
 # use line-buffering for both stdout and stderr
@@ -40,7 +46,7 @@ from diffusion_policy.workspace.base_workspace import BaseWorkspace
 @click.option('-c', '--checkpoint', required=True)
 @click.option('-o', '--output_dir', required=True)
 @click.option('-n', '--cfg_name', required=True)
-@click.option('-d', '--device', default='cuda:0')
+@click.option('-d', '--device', default='auto', show_default=True)
 def main(checkpoint, output_dir, cfg_name, device):
     if os.path.exists(output_dir):
         click.confirm(f"Output path {output_dir} already exists! Overwrite?", abort=True)
@@ -66,7 +72,10 @@ def main(checkpoint, output_dir, cfg_name, device):
     if cfg.training.use_ema:
         policy = workspace.ema_model
     
+    if device == 'auto':
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
     device = torch.device(device)
+    print(f"Using device: {device}")
     policy.to(device)
     policy.eval()
     
