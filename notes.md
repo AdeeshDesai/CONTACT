@@ -56,3 +56,77 @@ arch= gfx1151
 ```
 
 No alternate wheel, TheRock nightly, or `HSA_OVERRIDE_GFX_VERSION` was needed.
+
+## S1: dependencies and one policy training step
+
+Fetch the tested Diffusion Policy revision:
+
+```bash
+mkdir -p thirdparty
+git clone https://github.com/real-stanford/diffusion_policy.git \
+  thirdparty/diffusion_policy
+git -C thirdparty/diffusion_policy checkout \
+  5ba07ac6661db573af695b419a7947ecb704690f
+```
+
+Install the AMD-only requirements:
+
+```bash
+docker exec contact-rocm714 \
+  python -m pip install -r requirements-amd.txt
+```
+
+The upstream repositories use namespace-style source trees without top-level
+`__init__.py` files. Use setuptools compatible editable mode so both source
+roots are placed on `sys.path`:
+
+```bash
+docker exec contact-rocm714 python -m pip install \
+  --no-deps \
+  --force-reinstall \
+  --config-settings editable_mode=compat \
+  -e thirdparty/diffusion_policy \
+  -e .
+```
+
+Verified core versions:
+
+```text
+diffusers=0.40.0
+numpy=2.5.1
+numba=0.67.0
+zarr=2.18.7
+opencv=5.0.0
+```
+
+Run the synthetic one-step policy smoke test:
+
+```bash
+docker exec -e USE_SIM=0 contact-rocm714 \
+  python scripts/smoke_train_amd.py
+```
+
+Verified output:
+
+```text
+device=AMD Radeon 8060S Graphics
+arch=gfx1151
+loss=1.26865768
+lr=1.6e-07
+ema_step=1
+```
+
+The generic base image does not contain the optional
+`gfx1151_20.HIP.fdb.txt` MIOpen Find-DB file, so MIOpen emits a warning and
+performs runtime kernel selection. The full ResNet + diffusion UNet forward,
+backward, optimizer, scheduler, and EMA step completed successfully in 13.6
+seconds on the first run and 5.3 seconds after kernel caching. No environment
+workaround was applied.
+
+Check the resolved environment:
+
+```bash
+docker exec contact-rocm714 python -m pip check
+```
+
+Result: `No broken requirements found.`
