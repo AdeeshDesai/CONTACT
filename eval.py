@@ -3,7 +3,7 @@ Usage:
 python eval.py \
 --checkpoint /path/to/CONTACT/data/outputs/vision_sPiHezy_90/42/checkpoints/latest_epoch224.ckpt \
 -o /path/to/CONTACT/data/outputs/vision_sPiHezy_90/42/eval_output \
--d cuda:0
+-d auto
 """
 
 # IsaacGym links against the conda env's libpython, which the system linker
@@ -35,12 +35,13 @@ import dill
 import wandb
 import json
 from diffusion_policy.workspace.base_workspace import BaseWorkspace
+from contact.workspace.train_diffusion_unet_image_workspace import resolve_device
 
 @click.command()
 @click.option('-c', '--checkpoint', required=True)
 @click.option('-o', '--output_dir', required=True)
 @click.option('-n', '--cfg_name', required=True)
-@click.option('-d', '--device', default='cuda:0')
+@click.option('-d', '--device', default='auto', show_default=True)
 def main(checkpoint, output_dir, cfg_name, device):
     if os.path.exists(output_dir):
         click.confirm(f"Output path {output_dir} already exists! Overwrite?", abort=True)
@@ -66,7 +67,7 @@ def main(checkpoint, output_dir, cfg_name, device):
     if cfg.training.use_ema:
         policy = workspace.ema_model
     
-    device = torch.device(device)
+    device = resolve_device(device)
     policy.to(device)
     policy.eval()
     
