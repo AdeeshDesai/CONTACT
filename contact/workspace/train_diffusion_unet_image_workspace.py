@@ -30,9 +30,26 @@ from diffusion_policy.common.checkpoint_util import TopKCheckpointManager
 from diffusion_policy.common.json_logger import JsonLogger
 from diffusion_policy.common.pytorch_util import dict_apply, optimizer_to
 from diffusion_policy.model.diffusion.ema_model import EMAModel
-from diffusion_policy.model.common.lr_scheduler import get_scheduler
+try:
+    from diffusion_policy.model.common.lr_scheduler import get_scheduler
+except ImportError:
+    from diffusers.optimization import get_scheduler
 
 OmegaConf.register_new_resolver("eval", eval, replace=True)
+
+
+def resolve_device(device_name):
+    device_name = str(device_name)
+    if device_name.lower() == "auto":
+        device_name = "cuda" if torch.cuda.is_available() else "cpu"
+    return torch.device(device_name)
+
+
+def _sim_enabled():
+    return os.getenv("USE_SIM", "1").strip().lower() not in {
+        "0", "false", "no", "off"
+    }
+
 
 class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
     include_keys = ['global_step', 'epoch']
@@ -110,11 +127,12 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
                 model=self.ema_model)
 
         # configure env
-        env_runner: BaseImageRunner
-        env_runner = hydra.utils.instantiate(
-            cfg.task.env_runner,
-            output_dir=self.output_dir)
-        assert isinstance(env_runner, BaseImageRunner)
+        env_runner = None
+        if cfg.training.get("enable_rollout", True) and _sim_enabled():
+            env_runner = hydra.utils.instantiate(
+                cfg.task.env_runner,
+                output_dir=self.output_dir)
+            assert isinstance(env_runner, BaseImageRunner)
 
         # configure logging
         wandb_run = wandb.init(
@@ -135,7 +153,8 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
         )
 
         # device transfer
-        device = torch.device(cfg.training.device)
+        device = resolve_device(cfg.training.device)
+        print(f"Using device: {device}")
         self.model.to(device)
         if self.ema_model is not None:
             self.ema_model.to(device)
@@ -221,7 +240,8 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
                 policy.eval()
 
                 # run rollout
-                if (self.epoch % cfg.training.rollout_every) == 0:
+                if env_runner is not None \
+                        and (self.epoch % cfg.training.rollout_every) == 0:
                     runner_log = env_runner.run(policy)
                     # log all
                     step_log.update(runner_log)

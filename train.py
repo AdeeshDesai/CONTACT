@@ -10,19 +10,25 @@ $ python train.py \
 
 """
 
-# IsaacGym links against the conda env's libpython, which the system linker
-# cannot find on its own; preloading it removes the need to export
-# LD_LIBRARY_PATH=$CONDA_PREFIX/lib.
-import ctypes as _ctypes
 import os as _os
-import sys as _sys
-_libpython = _os.path.join(
-    _sys.prefix, 'lib',
-    f'libpython{_sys.version_info.major}.{_sys.version_info.minor}.so.1.0')
-if _os.path.exists(_libpython):
-    _ctypes.CDLL(_libpython, mode=_ctypes.RTLD_GLOBAL)
 
-import isaacgym
+_USE_SIM = _os.getenv("USE_SIM", "1").strip().lower() not in {
+    "0", "false", "no", "off"
+}
+if _USE_SIM:
+    # IsaacGym links against the conda env's libpython, which the system linker
+    # cannot find on its own; preloading it removes the need to export
+    # LD_LIBRARY_PATH=$CONDA_PREFIX/lib.
+    import ctypes as _ctypes
+    import sys as _sys
+
+    _libpython = _os.path.join(
+        _sys.prefix, 'lib',
+        f'libpython{_sys.version_info.major}.{_sys.version_info.minor}.so.1.0')
+    if _os.path.exists(_libpython):
+        _ctypes.CDLL(_libpython, mode=_ctypes.RTLD_GLOBAL)
+
+    import isaacgym
 
 
 import os
