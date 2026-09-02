@@ -45,6 +45,12 @@ def resolve_device(device_name):
     return torch.device(device_name)
 
 
+def _sim_enabled():
+    return os.getenv("USE_SIM", "1").strip().lower() not in {
+        "0", "false", "no", "off"
+    }
+
+
 class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
     include_keys = ['global_step', 'epoch']
 
@@ -122,7 +128,7 @@ class TrainDiffusionUnetImageWorkspace(BaseWorkspace):
 
         # configure env
         env_runner = None
-        if cfg.training.get("enable_rollout", True):
+        if cfg.training.get("enable_rollout", True) and _sim_enabled():
             env_runner = hydra.utils.instantiate(
                 cfg.task.env_runner,
                 output_dir=self.output_dir)

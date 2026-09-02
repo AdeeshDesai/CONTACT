@@ -61,8 +61,6 @@ def main():
         )
 
     device = resolve_device(cfg.training.device)
-    if device.type != "cuda":
-        raise RuntimeError("smoke_train requires an available CUDA-capable device")
 
     torch.manual_seed(cfg.training.seed)
     model = hydra.utils.instantiate(cfg.policy)
@@ -86,13 +84,20 @@ def main():
 
     optimizer.zero_grad(set_to_none=True)
     loss = model.compute_loss(batch)
+    if not torch.isfinite(loss):
+        raise RuntimeError(f"non-finite loss: {loss.item()}")
     loss.backward()
     optimizer.step()
     lr_scheduler.step()
     ema.step(model)
-    torch.cuda.synchronize()
+    if device.type == "cuda":
+        torch.cuda.synchronize()
 
-    print(f"device={torch.cuda.get_device_name(device)}")
+    device_label = (
+        torch.cuda.get_device_name(device)
+        if device.type == "cuda"
+        else str(device))
+    print(f"device={device_label}")
     print(f"loss={loss.item():.8f}")
     print(f"lr={lr_scheduler.get_last_lr()[0]:.8g}")
     print(f"ema_step={ema.optimization_step}")
