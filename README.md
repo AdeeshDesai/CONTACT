@@ -5,7 +5,7 @@ CONtact-aware TACTile Learning for Robotic Disassembly</h2>
 
 <a href="https://vict0rhu.github.io/CONTACT-Website/"><img src="https://img.shields.io/badge/Project-Page-blue" alt="Project Page"></a>
 <a href="https://arxiv.org/abs/2603.08560"><img src="https://img.shields.io/badge/Paper-arXiv-red" alt="Paper"></a>
-<a href="https://drive.google.com/drive/folders/1FqhPtE4S8JfbGgZU9uFjm-rjhGslpqEy"><img src="https://img.shields.io/badge/Dataset-GoogleDrive-yellow" alt="Dataset"></a>
+<a href="https://huggingface.co/datasets/Adeesh09/CONTACT"><img src="https://img.shields.io/badge/Dataset-HuggingFace-yellow" alt="Dataset"></a>
 
 </div>
 
@@ -67,8 +67,8 @@ bash scripts/download_data.sh barbed_flat     # one task
 bash scripts/download_data.sh all             # all five tasks
 ```
 
-Manual alternative: download the zip for your task from the
-[dataset folder](https://drive.google.com/drive/folders/1FqhPtE4S8JfbGgZU9uFjm-rjhGslpqEy?usp=sharing)
+Manual alternative: download the zip for your task from
+[Hugging Face](https://huggingface.co/datasets/Adeesh09/CONTACT/tree/main)
 and unzip it inside `CONTACT/data/`.
 
 ## Training
